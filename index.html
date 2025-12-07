@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Letter Typewriter Page</title>
+
+  <style>
+    :root { 
+      --paper-bg: #fffdf7;
+      --paper-border: #e7d9b8;
+      --text: #222;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Courier New", monospace;
+    }
+
+    /* Background image + overlay */
+    body {
+      background:
+        linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+        url("bg.jpg") center/cover no-repeat fixed;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    /* Letter Paper */
+    .paper {
+      background: var(--paper-bg);
+      width: 700px;
+      min-height: 90%;
+      border: 3px solid var(--paper-border);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0px 10px 35px rgba(0,0,0,0.4);
+      color: var(--text);
+      position: relative;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 1.2rem;
+    }
+
+    /* Buttons */
+    .controls {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: .5rem;
+      z-index: 1000;
+    }
+
+    .btn {
+      padding: .5rem .9rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: rgba(255,255,255,0.25);
+      color: white;
+      font-size: 1rem;
+      border: 1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    /* Blinking cursor */
+    .cursor {
+      display: inline-block;
+      width: .65ch;
+      height: 1.2em;
+      background: black;
+      margin-left: 3px;
+      animation: blink 0.9s steps(1) infinite;
+      vertical-align: bottom;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+
+<body>
+
+  <!-- Buttons -->
+  <div class="controls">
+    <button class="btn" id="playBtn">PLAY 🥰</button>
+    <button class="btn" id="pauseBtn">STOP 😡</button>
+    <button class="btn" id="restartBtn">REPEAT ❤️</button>
+  </div>
+
+  <!-- Letter Paper -->
+  <div class="paper">
+    <span id="type"></span>
+    <span class="cursor"></span>
+  </div>
+
+  <audio id="bgMusic" src="bgmusic.mp3" loop></audio>
+
+
+  <!-- Typewriter Audio -->
+  <audio id="keySound" src="typewriter.mp3" preload="auto"></audio>
+
+  <script>
+    const LINES = [
+      "HAI thea, it's been 500 years since we last shared a conversation kimi HAHAHAHAHA",
+       "The power of chatgpt HAHAHAHAHAHAHA pero naghingi lang naman ako tutorial hehe",
+       "Wala naman akong sasabihin talaga trip ko lang gumawa ng ganto for some reason",
+       "Last Thursday ko pa to naiisip gawin tas ngayon lang ako nagkatime",
+       "Ngayon lang din pumasok sa utak ko ulit",
+       "sorry ampangit ng format HAHAHAHAHAHAHA",
+       "clarification lang sa nangyari kanina is wala I just expected more from you",
+       "kasi first time mangyari sakin ang ganon tas I thought you would care more",
+       "tas nung nag-alis ako narealize ko na you cared naman pala although less than what I expected",
+       "for some random reason, at least you still cared and enough na yon",
+       "Lahat ng sinasabi mo I understand it and I've been trying to apply it kahit minsan di ko talaga gawain ang ganon",
+       "I still try kahit papaano",
+       "Anyways, mahapdi padin sugat ko Lalo na dun sa bewang HAHAHAHAHAHAHA.",
+       "Ok, next topic kasi this is about of you and not me",
+       "I think you are",
+       "S",
+       "U",
+       "P",
+       "E",
+       "R",       
+       "C",
+       "A",
+       "L",
+       "I",
+       "F",
+       "R",
+       "A",
+       "G",
+       "I",
+       "L",
+       "I",
+       "S",
+       "T",
+       "I",
+       "C",
+       "E",
+       "X",
+       "P",
+       "I",
+       "A",
+       "L",
+       "I",
+       "D",
+       "O",
+       "C",
+       "I",
+       "O",
+       "U",
+       "S",
+       "supercalifragilisticexpialidocious",
+       "Grabe ang haba HAHAHAHAHAHAHAHA",
+       "I think and know na you are cute in every way possible",
+       "luh?!HAHAHAHAHAHAHA",
+       "parang baliw",
+       "I think wala mana akong iba pang sasabihin",
+       "BYEBYE!!!",
+    
+    ];
+
+    const TYPE_SPEED = 67;
+
+    const bgMusic = document.getElementById("bgMusic");
+    bgMusic.volume = 0.75; // louder background music
+
+
+    const output = document.getElementById("type");
+    const audio = document.getElementById("keySound");
+
+    let lineIndex = 0;
+    let charIndex = 0;
+    let paused = true;
+    let timeoutId = null;
+
+    function typeStep() {
+      if (paused) return;
+
+      const line = LINES[lineIndex];
+
+      if (charIndex < line.length) {
+        output.textContent += line.charAt(charIndex++);
+        
+        // Play key sound (clone to allow rapid-fire audio)
+        let s = audio.cloneNode();
+        s.volume = 0.4;
+        s.play();
+
+        autoScroll();
+        timeoutId = setTimeout(typeStep, TYPE_SPEED);
+      }
+      else {
+        output.textContent += "\n";
+        charIndex = 0;
+        lineIndex++;
+
+        autoScroll();
+
+        if (lineIndex < LINES.length) {
+          timeoutId = setTimeout(typeStep, TYPE_SPEED);
+        }
+      }
+    }
+
+    function autoScroll() {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+
+    document.getElementById("playBtn").onclick = () => {
+      if (lineIndex >= LINES.length) return;
+      paused = false;
+      typeStep();
+      bgMusic.play();
+    };
+
+    document.getElementById("pauseBtn").onclick = () => paused = true;
+
+    document.getElementById("restartBtn").onclick = () => {
+      clearTimeout(timeoutId);
+      output.textContent = "";
+      lineIndex = 0;
+      charIndex = 0;
+      paused = false;
+      typeStep();
+    };
+  </script>
+</body>
+</html>
